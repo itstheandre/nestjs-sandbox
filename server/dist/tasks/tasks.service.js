@@ -16,7 +16,12 @@ let TasksService = class TasksService {
     getAllTasks() {
         return this.tasks;
     }
-    createTask(title, description) {
+    getTaskById(id) {
+        const theOne = this.tasks.find(el => el.id === id);
+        return theOne;
+    }
+    createTask(createTaskDto) {
+        const { title, description } = createTaskDto;
         const task = {
             title,
             description,
@@ -25,6 +30,12 @@ let TasksService = class TasksService {
         };
         this.tasks.push(task);
         return task;
+    }
+    deleteTask(id) {
+        const theOne = this.tasks.findIndex(el => el.id === id);
+        const copy = Object.assign({}, this.tasks[theOne]);
+        this.tasks = this.tasks.filter(el => el.id !== id);
+        return { deleted: copy, updated: this.tasks };
     }
 };
 TasksService = __decorate([
