@@ -31,6 +31,12 @@ let TasksService = class TasksService {
         this.tasks.push(task);
         return task;
     }
+    updateTask(id, updateTaskDto) {
+        const { status } = updateTaskDto;
+        const findTask = this.tasks.find(el => el.id === id);
+        findTask.status = status;
+        return { changed: findTask, updated: this.tasks };
+    }
     deleteTask(id) {
         const theOne = this.tasks.findIndex(el => el.id === id);
         const copy = Object.assign({}, this.tasks[theOne]);

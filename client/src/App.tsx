@@ -4,13 +4,25 @@ import './App.css';
 import axios, { AxiosResponse } from 'axios';
 import { PORT } from './lib/serverPort';
 import { initialVal } from './lib/initialVal';
-import { Task } from './lib/interfaces/ITask.interface';
+import { Task, TaskStatus } from './lib/interfaces/ITask.interface';
+import TaskComponent from './components/task';
 console.log('PORT:', PORT);
 
-interface IDeleteTasks extends AxiosResponse {
-  data: {
-    updated: Task[];
-  };
+export interface TaskDBRes {
+  updated: Task[];
+  // deleted?: Task;
+  // changed?: Task;
+}
+
+export interface TaskDelete extends TaskDBRes {
+  deleted: Task;
+}
+export interface TaskUpdateInfo extends TaskDBRes {
+  changed: Task;
+}
+
+interface IAxiosTasks extends AxiosResponse {
+  data: TaskUpdateInfo & TaskDelete;
 }
 
 function App() {
@@ -40,7 +52,7 @@ function App() {
   }
 
   async function deleteTask(id: string) {
-    const { data }: IDeleteTasks = await axios.delete(`/tasks/${id}`);
+    const { data }: IAxiosTasks = await axios.delete(`/tasks/${id}`);
     console.log('data:', data);
     setTasks(data.updated);
   }
@@ -50,12 +62,33 @@ function App() {
     console.log('data:', data);
   }
 
+  async function updateTask(
+    id: string,
+    status: TaskStatus | string,
+  ): Promise<TaskUpdateInfo['changed']> {
+    const { data }: IAxiosTasks = await axios.put(`${PORT}/tasks/${id}`, {
+      status,
+    });
+
+    console.log(data);
+    setTasks(data.updated);
+    return data.changed;
+  }
+
   console.log(tasks);
 
   return (
     <div className="App">
       <header className="App-header">
-        {tasks.length > 0 &&
+        {tasks.map((el: Task) => (
+          <TaskComponent
+            deleteTask={deleteTask}
+            updateTask={updateTask}
+            consoleThatOne={consoleThatOne}
+            {...el}
+          />
+        ))}
+        {/* {tasks.length > 0 &&
           tasks.map((el: Task) => (
             <div key={el.id}>
               <p>{el.title}</p>
@@ -68,7 +101,7 @@ function App() {
                 Delete me!
               </button>
             </div>
-          ))}
+          ))} */}
 
         <form onSubmit={onSubmit}>
           <label>Title</label>
